@@ -1,8 +1,17 @@
-/*
+.wakatime-chart {
+    width: 50% !important;
+    height: 50% !important;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.block-language-wakatime {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-If your plugin does not need CSS, delete this file.
-
-*/
+.wakatime-total-time {
+    position: absolute;
+    top: 0;
+    font-size: 1.5em;
+    font-style: bold;
+}
