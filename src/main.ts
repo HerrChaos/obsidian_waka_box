@@ -138,13 +138,17 @@ export default class WakaBoxPlugin extends Plugin {
 		const date = moment().format(this.settings.dateFormat);
 		this.summaryFetcher.requestWakaTimeSummary(this.settings, date, false, this.onFetchedSummary);
 		}
-		const interval = 60 * 60 * 1000;
-		this.registerInterval(window.setInterval(() => {
-			if (this.summaryFetcher != undefined) {
-				const date = moment().format(this.settings.dateFormat);
-				this.summaryFetcher.requestWakaTimeSummary(this.settings, date, false, this.onFetchedSummary);
-			}
-		}, interval));
+
+		if (this.settings.updateInterval != 0) {
+			const interval = this.settings.updateInterval * 60000; // Convert minutes to milliseconds
+			this.registerInterval(window.setInterval(() => {
+			console.log("WakaTime box: update interval is set to " + this.settings.updateInterval + " minutes");
+				if (this.summaryFetcher != undefined) {
+					const date = moment().format(this.settings.dateFormat);
+					this.summaryFetcher.requestWakaTimeSummary(this.settings, date, false, this.onFetchedSummary);
+				}
+			}, interval));
+		}
 
 		this.registerMarkdownCodeBlockProcessor("wakatime", (source, el, _ctx) => {
 			try {
@@ -449,9 +453,11 @@ export default class WakaBoxPlugin extends Plugin {
 		const dailyNotes = getAllDailyNotes();
 		const dailyNode = getDailyNote(momentDate, dailyNotes)
 		if (dailyNode == undefined) {
-			createDailyNote(momentDate).then((file) => {
-				this.processDailyNote(file, summary, fromCache);
-			});
+			if (this.settings.createDailyNote) {
+				createDailyNote(momentDate).then((file) => {
+					this.processDailyNote(file, summary, fromCache);
+				});
+			}
 		} else {
 			this.processDailyNote(dailyNode, summary, fromCache);
 		}

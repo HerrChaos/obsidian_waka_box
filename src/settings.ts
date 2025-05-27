@@ -13,6 +13,8 @@ interface TypeDisplayOptions {
 export type DataDisplayType = keyof TypeDisplayOptions;
 
 export interface WakaBoxPluginSettings {
+	updateInterval: number; // In minutes
+	createDailyNote: boolean;
     apiKey: string;
     apiBaseUrl: string;
     dateFormat: string;
@@ -30,6 +32,8 @@ export const DEFAULT_SETTINGS: WakaBoxPluginSettings = {
     typeDisplay: 'Project',
     displayTotatlTime: true,
     showLegend: true,
+    createDailyNote: false,
+    updateInterval: 5,
 }
 
 export class WakaBoxSettingTab extends PluginSettingTab {
@@ -74,6 +78,20 @@ export class WakaBoxSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                     this.plugin.onGetAPIKey();
                 }));
+
+        new Setting(containerEl)
+            .setName('Update interval')
+            .setDesc('The interval in minutes to update the chart. Set to 0 to disable auto-update.')
+            .addText(text => text
+                .setValue(this.plugin.settings.updateInterval.toString())
+                .setPlaceholder('Enter 0 to disable auto-update')
+                .onChange(async (value) => {
+                    this.plugin.settings.updateInterval = value ? parseInt(value) : 0;
+                    await this.plugin.saveSettings();
+                    this.plugin.onGetAPIKey();
+                }));
+
+
 
         new Setting(containerEl)
             .setName('Look')
@@ -125,6 +143,22 @@ export class WakaBoxSettingTab extends PluginSettingTab {
                 toggle.setValue(this.plugin.settings.displayTotatlTime)
                 .onChange(async (value) => {
                     this.plugin.settings.displayTotatlTime = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.onGetAPIKey();
+                    this.display();
+                })});
+
+        new Setting(containerEl)
+            .setName('Miscellaneous')
+            .setHeading();
+
+        new Setting(containerEl)
+            .setName('Create daily note if missing')
+            .setDesc('Whether to create a daily note if it does not exist.')
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.createDailyNote)
+                .onChange(async (value) => {
+                    this.plugin.settings.createDailyNote = value;
                     await this.plugin.saveSettings();
                     this.plugin.onGetAPIKey();
                     this.display();
